@@ -38,7 +38,7 @@ en prenant en compte tous les coûts d'exploitation et d'installation.
 # Sidebar pour les paramètres généraux
 with st.sidebar:
     st.header("Paramètres Généraux")
-    devise = st.selectbox("Devise", ["CFA", "EUR", "USD"])
+    devise = st.selectbox("Devise", ["CFA", "EUR"])
     duree_contrat = st.slider("Durée du contrat (mois)", 12, 60, 24)
     marge_beneficiaire = st.slider("Marge bénéficiaire (%)", 0, 50, 15)
 
@@ -56,14 +56,21 @@ st.header("3. Coûts d'Exploitation")
 if type_imprimante == "Couleur":
     st.subheader("Répartition des pages")
     col1, col2 = st.columns(2)
-    with col1:
-        pourcentage_couleur = st.slider("Pourcentage de pages couleur", 0, 100, 30)
-    with col2:
-        pourcentage_noir = 100 - pourcentage_couleur
-        st.write(f"Pourcentage de pages noir & blanc: {pourcentage_noir}%")
     
-    pages_couleur = pages_par_mois * pourcentage_couleur / 100
-    pages_noir = pages_par_mois * pourcentage_noir / 100
+    with col1:
+        pages_couleur = st.number_input("Nombre de pages couleur", min_value=0, max_value=pages_par_mois, value=int(pages_par_mois * 0.3), step=100)
+    
+    with col2:
+        pages_noir = st.number_input("Nombre de pages noir & blanc", min_value=0, max_value=pages_par_mois, value=int(pages_par_mois * 0.7), step=100)
+    
+    # Ajustement automatique pour que la somme ne dépasse pas le total
+    if pages_couleur + pages_noir > pages_par_mois:
+        st.warning(f"La somme des pages couleur et noir & blanc ({pages_couleur + pages_noir}) dépasse le total de pages ({pages_par_mois}). Ajustement automatique.")
+        ratio = pages_par_mois / (pages_couleur + pages_noir)
+        pages_couleur = int(pages_couleur * ratio)
+        pages_noir = int(pages_noir * ratio)
+        st.write(f"Pages couleur ajustées: {pages_couleur}")
+        st.write(f"Pages noir & blanc ajustées: {pages_noir}")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -147,7 +154,7 @@ with st.expander("Voir le détail du calcul"):
     st.write(f"- **Coût d'exploitation mensuel: {cout_exploitation_mensuel:,.0f} {devise}**")
     
     st.subheader("Calcul du loyer")
-    st.write(f"- Durée du contrat: {duree_contrat} meses")
+    st.write(f"- Durée du contrat: {duree_contrat} mois")
     st.write(f"- Coût total sur la durée: {cout_total_contrat:,.0f} {devise}")
     st.write(f"- Loyer mensuel sans marge: {cout_total_contrat:,.0f} / {duree_contrat} = {loyer_sans_marge:,.0f} {devise}")
     st.write(f"- Marge bénéficiaire: {marge_beneficiaire}%")
@@ -173,7 +180,8 @@ if st.button("💾 Sauvegarder la simulation"):
     }
     
     if type_imprimante == "Couleur":
-        simulation_data["pourcentage_couleur"] = pourcentage_couleur
+        simulation_data["pages_couleur"] = pages_couleur
+        simulation_data["pages_noir"] = pages_noir
         simulation_data["cout_page_couleur"] = cout_page_couleur
         simulation_data["cout_page_noir"] = cout_page_noir
     
