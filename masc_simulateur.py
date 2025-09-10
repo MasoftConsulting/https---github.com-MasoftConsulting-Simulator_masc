@@ -105,14 +105,14 @@ with col1:
     cout_installation = st.number_input(f"Coût d'installation ({devise})", min_value=0, value=200, step=50)
     
 with col2:
-    salaire_expert = st.number_input(f"Salaire de l'expert ({devise})", min_value=0, value=400, step=50)
+    salaire_expert = st.number_input(f"Quote par Expert ({devise})", min_value=0, value=400, step=50)
 
 # Section 6: Coûts de consommables
 st.header("6. Coûts de Consommables")
 cout_consommables = st.number_input(f"Coût mensuel des consommables ({devise})", min_value=0, value=150, step=10)
 
 # Calcul des coûts
-cout_initial_total = prix_machine + fret_approche + transitaire + cout_installation + salaire_expert
+cout_initial_total = prix_machine + fret_approche + transitaire + cout_installation + (salaire_expert * duree_contrat)
 cout_exploitation_mensuel = (pages_couleur * cout_page_couleur) + (pages_noir * cout_page_noir) + cout_consommables
 cout_total_contrat = cout_initial_total + (cout_exploitation_mensuel * duree_contrat)
 loyer_sans_marge = cout_total_contrat / duree_contrat
